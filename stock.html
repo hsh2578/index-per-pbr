@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 <body>
@@ -36,11 +36,11 @@
     <div id="summary"></div>
 
     <p class="note" id="note"></p>
-    <p class="note" style="color:#dc2626;margin-top:6px">
-      ─ ─ ─ TTM 평균선 &nbsp;·&nbsp;
-      <span style="border-bottom:2px dotted #dc2626;padding:0 2px">···</span>
-      Forward (네이버 컨센서스)
-    </p>
+    <div class="legend-note">
+      <span><span class="legend-line legend-mean"></span>평균선</span>
+      <span><span class="legend-band"></span>±1σ 밴드</span>
+      <span><span class="legend-line legend-fwd"></span>Forward (컨센서스)</span>
+    </div>
   </aside>
 
   <section class="charts">
@@ -63,6 +63,6 @@
   </section>
 </main>
 
-<script src="stock.js?v=2"></script>
+<script src="stock.js?v=3"></script>
 </body>
 </html>

@@ -93,12 +93,13 @@ function updateCardVisibility() {
 
 function buildTraces(metricKey) {
   let { xs, ys } = filterByPeriod(metricKey);
-  if (!ys.length || ys.every(v => v === null)) return [];
+  if (!ys.length || ys.every(v => v === null)) return { traces: [], annotations: [] };
 
   const showBand = document.getElementById('opt-band').checked;
   const showMean = document.getElementById('opt-mean').checked;
   const useStat = !['close', 'market_cap'].includes(metricKey);
   const traces = [];
+  const annotations = [];
   const stat = statBand(ys);
 
   if (useStat && showBand && stat && stat.sd > 0) {
@@ -115,7 +116,7 @@ function buildTraces(metricKey) {
       showlegend: false, hoverinfo: 'skip',
     });
   }
-  if (useStat && showMean && stat) {
+  if (showMean && stat) {
     traces.push({
       x: [xs[0], xs[xs.length - 1]], y: [stat.mean, stat.mean],
       type: 'scatter', mode: 'lines',
@@ -130,6 +131,7 @@ function buildTraces(metricKey) {
     line: { color: COLOR, width: 2, shape: 'spline', smoothing: 0.3 },
     connectgaps: true,
     hovertemplate: '%{x|%Y-%m-%d}<br>%{y:,.2f}<extra>' + dataset.name + '</extra>',
+    showlegend: false,
   });
 
   const fwd = dataset.forward || {};
@@ -140,27 +142,39 @@ function buildTraces(metricKey) {
       x: [xs[0], xs[xs.length - 1]], y: [fwdVal, fwdVal],
       type: 'scatter', mode: 'lines',
       line: { dash: 'dot', width: 2, color: '#dc2626' },
-      name: `Forward ${metricKey.toUpperCase()} ${fwdVal.toFixed(2)} (${fwd.year_estimate || ''})`,
-      hovertemplate: `Forward ${metricKey.toUpperCase()} ${fwdVal.toFixed(2)}<extra>${fwd.year_estimate || ''}</extra>`,
-      showlegend: true,
+      hoverinfo: 'skip', showlegend: false,
+    });
+    annotations.push({
+      x: xs[xs.length - 1], y: fwdVal,
+      xref: 'x', yref: 'y',
+      text: `<b>Fwd ${fwdVal.toFixed(2)}</b>`,
+      showarrow: false,
+      xanchor: 'right', yanchor: 'bottom',
+      font: { color: '#dc2626', size: 11 },
+      bgcolor: 'rgba(255,255,255,0.85)',
+      bordercolor: '#dc2626',
+      borderwidth: 0.5,
+      borderpad: 2,
     });
   }
-  return traces;
+  return { traces, annotations };
 }
 
 function render() {
   if (!dataset) return;
   updateCardVisibility();
   for (const m of METRICS) {
-    const traces = buildTraces(m.key);
+    const { traces, annotations } = buildTraces(m.key);
     Plotly.react(m.chartId, traces, {
-      margin: { l: 64, r: 16, t: 8, b: 36 },
+      margin: { l: 64, r: 16, t: 12, b: 36 },
       xaxis: { type: 'date', showgrid: false, color: '#6b7280' },
-      yaxis: { gridcolor: '#eef2f7', color: '#6b7280' },
+      yaxis: { gridcolor: '#eef2f7', color: '#6b7280', automargin: true },
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
       hovermode: 'x unified',
       font: { family: 'inherit', size: 11 },
+      annotations: annotations || [],
+      showlegend: false,
     }, { displayModeBar: false, responsive: true });
   }
   renderSummary();
@@ -178,6 +192,7 @@ function renderSummary() {
   };
   const fwd = dataset.forward || {};
   const fwdMap = { per: fwd.per_forward, pbr: fwd.pbr_forward };
+  const fwdYearShort = (fwd.year_estimate || '').split('/')[0] || '';
 
   for (const m of ['per', 'pbr', 'market_cap', 'close']) {
     const { ys } = filterByPeriod(m);
@@ -192,7 +207,7 @@ function renderSummary() {
     const zCls = z >= 0 ? 'z-pos' : 'z-neg';
     const sign = z >= 0 ? '+' : '';
     const fwdRow = (m === 'per' || m === 'pbr') && fwdMap[m] != null
-      ? `<span>Forward (${fwd.year_estimate || ''})</span><span style="color:#dc2626;font-weight:600">${fmt(fwdMap[m])}</span>`
+      ? `<span>Fwd ${fwdYearShort}E</span><span style="color:#dc2626;font-weight:600">${fmt(fwdMap[m])}</span>`
       : '';
     blocks.push(`
       <div class="stat-block">
@@ -219,13 +234,13 @@ function renderSummary() {
     const upsideStr = upside == null ? '—' : `${upside >= 0 ? '+' : ''}${upside.toFixed(1)}%`;
     blocks.push(`
       <div class="stat-block">
-        <div class="stat-label">컨센서스 (${cs.broker_count || brokers.length}개 증권사)</div>
+        <div class="stat-label">증권사 컨센서스 (${cs.broker_count || brokers.length}곳)</div>
         <div class="stat-val">${fmt(tgt)}원</div>
         <div class="stat-grid">
           <span>현재가 대비</span><span class="${upsideCls}">${upsideStr}</span>
-          <span>평균 Forward PER</span><span>${fmt(cs.avg_per_forward)}</span>
-          <span>평균 Forward EPS</span><span>${fmt(cs.avg_eps_forward)}</span>
-          <span>컨센서스 점수</span><span>${cs.consensus_score ?? '—'}</span>
+          <span>Fwd PER</span><span>${fmt(cs.avg_per_forward)}</span>
+          <span>Fwd EPS</span><span>${fmt(cs.avg_eps_forward)}</span>
+          <span>점수</span><span>${cs.consensus_score ?? '—'}</span>
         </div>
       </div>`);
   }

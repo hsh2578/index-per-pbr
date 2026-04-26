@@ -164,6 +164,39 @@ main {
 .stat-grid .z-pos { color: #b91c1c !important; }
 .stat-grid .z-neg { color: #1d4ed8 !important; }
 
+.legend-note {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #e5e7eb;
+  font-size: 11px;
+  color: #6b7280;
+}
+.legend-note > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-line {
+  display: inline-block;
+  width: 18px;
+  height: 0;
+  border-top-width: 1.5px;
+  border-top-style: dashed;
+}
+.legend-line.legend-mean { border-top-color: #2563eb; }
+.legend-line.legend-fwd  { border-top-color: #dc2626; border-top-style: dotted; border-top-width: 2px; }
+.legend-band {
+  display: inline-block;
+  width: 18px;
+  height: 10px;
+  background: rgba(37, 99, 235, 0.10);
+  border-top: 1px solid rgba(37, 99, 235, 0.4);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.4);
+}
+
 .charts {
   display: grid;
   grid-template-columns: 1fr 1fr;
