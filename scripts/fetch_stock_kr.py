@@ -1,4 +1,8 @@
-"""한국 종목 일별 PER/PBR/시가총액/종가 → data/stocks/{code}.json"""
+"""한국 종목 일별 PER/PBR/시가총액/종가 + 컨센서스 → data/stocks/{code}.json
+
+기본은 증분 갱신. --full 옵션 시 풀 10년 재수집.
+"""
+import argparse
 import json
 import os
 import sys
@@ -31,6 +35,8 @@ from pykrx import stock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from naver_consensus import fetch_naver_data  # noqa: E402
+from incremental import (read_existing, get_incremental_start,  # noqa: E402
+                          merge_timeseries, diff_summary)
 
 try:
     import FinanceDataReader as fdr
@@ -40,6 +46,7 @@ except ImportError:
 
 DATA_DIR = _PROJECT_ROOT / "data" / "stocks"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+SERIES_FIELDS = ["per", "pbr", "div_yield", "close", "market_cap"]
 
 
 def _to_list(s, ndigits=2):
@@ -50,10 +57,7 @@ def _to_int_list(s):
     return [None if pd.isna(v) else int(round(float(v))) for v in s]
 
 
-def fetch_kr_stock(code: str) -> dict:
-    end_dt = datetime.now()
-    start_dt = end_dt - timedelta(days=365 * 10 + 30)
-    end, start = end_dt.strftime("%Y%m%d"), start_dt.strftime("%Y%m%d")
+def fetch_kr_stock(code: str, start: str, end: str) -> dict:
 
     try:
         name = stock.get_market_ticker_name(code)
@@ -109,15 +113,27 @@ def fetch_kr_stock(code: str) -> dict:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python fetch_stock_kr.py <code>", file=sys.stderr)
-        sys.exit(1)
-    code = sys.argv[1]
-    print(f"[KR/{code}] fetching ...", flush=True)
-    d = fetch_kr_stock(code)
-    out = DATA_DIR / f"{code}.json"
-    out.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
-    print(f"  → {out.relative_to(_PROJECT_ROOT)} ({len(d['dates'])}건, {d['name']})")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("code", help="6자리 KR 종목코드")
+    ap.add_argument("--full", action="store_true",
+                    help="기존 데이터 무시하고 10년 풀 재수집")
+    args = ap.parse_args()
+
+    end_dt = datetime.now()
+    end = end_dt.strftime("%Y%m%d")
+    out = DATA_DIR / f"{args.code}.json"
+    existing = None if args.full else read_existing(out)
+    start = get_incremental_start(out) if not args.full else \
+        (end_dt - timedelta(days=365 * 10 + 30)).strftime("%Y%m%d")
+
+    mode = "FULL" if args.full or existing is None else "INCR"
+    print(f"[KR/{args.code}/{mode}] {start}~{end} fetching...", flush=True)
+    new = fetch_kr_stock(args.code, start, end)
+    merged = merge_timeseries(existing, new, SERIES_FIELDS)
+    out.write_text(json.dumps(merged, ensure_ascii=False), encoding="utf-8")
+    s = diff_summary(existing, merged)
+    print(f"  → {out.relative_to(_PROJECT_ROOT)} ({s['new_count']}건, "
+          f"+{s['added']} added, last {s['new_last']}, {merged.get('name')})")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,9 @@
-"""KOSPI / KOSDAQ 10년 일별 PER/PBR/배당수익률/지수 종가 → JSON"""
+"""KOSPI / KOSDAQ 일별 PER/PBR/배당수익률/지수 종가 → JSON
+
+기본 증분 갱신 (마지막 날짜 - 30일부터 fetch + 신규 일자만 추가).
+--full 옵션 시 풀 10년 재수집.
+"""
+import argparse
 import json
 import os
 import sys
@@ -33,10 +38,15 @@ if not (os.environ.get("KRX_ID") and os.environ.get("KRX_PW")):
 import pandas as pd
 from pykrx import stock
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from incremental import (read_existing, get_incremental_start,  # noqa: E402
+                          merge_timeseries, diff_summary)
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 INDICES = {"kospi": "1001", "kosdaq": "2001"}
+SERIES_FIELDS = ["per", "pbr", "div_yield", "close"]
 
 
 def _to_list(series, ndigits=2):
@@ -62,16 +72,28 @@ def fetch_index(name: str, code: str, start: str, end: str) -> dict:
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--full", action="store_true",
+                    help="기존 데이터 무시하고 10년 풀 재수집")
+    args = ap.parse_args()
+
     end_dt = datetime.now()
-    start_dt = end_dt - timedelta(days=365 * 10 + 30)
-    end, start = end_dt.strftime("%Y%m%d"), start_dt.strftime("%Y%m%d")
+    end = end_dt.strftime("%Y%m%d")
 
     for name, code in INDICES.items():
-        print(f"[{name}] {start}~{end} fetching...", flush=True)
-        data = fetch_index(name, code, start, end)
         out = DATA_DIR / f"{name}.json"
-        out.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-        print(f"  → {out.name} ({len(data['dates'])}건)")
+        existing = None if args.full else read_existing(out)
+        start = get_incremental_start(out) if not args.full else \
+            (end_dt - timedelta(days=365 * 10 + 30)).strftime("%Y%m%d")
+
+        mode = "FULL" if args.full or existing is None else "INCR"
+        print(f"[{name}/{mode}] {start}~{end} fetching...", flush=True)
+        new = fetch_index(name, code, start, end)
+        merged = merge_timeseries(existing, new, SERIES_FIELDS)
+
+        out.write_text(json.dumps(merged, ensure_ascii=False), encoding="utf-8")
+        s = diff_summary(existing, merged)
+        print(f"  → {out.name} ({s['new_count']}건, +{s['added']} added, last {s['new_last']})")
 
 
 if __name__ == "__main__":
