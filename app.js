@@ -15,6 +15,33 @@ const METRICS = [
 const datasets = {};
 let currentMode = 'compare';
 
+async function loadStocksStrip() {
+  const stripEl = document.getElementById('stock-cards');
+  const sectionEl = document.getElementById('stock-strip');
+  if (!stripEl) return;
+  try {
+    const r = await fetch(`data/stocks/_index.json?t=${Date.now()}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const items = await r.json();
+    if (!items?.length) { sectionEl.style.display = 'none'; return; }
+    const fmt = (v) => v == null || !Number.isFinite(v) ? '—'
+      : (v >= 1000 ? v.toLocaleString('en', { maximumFractionDigits: 0 }) : v.toFixed(2));
+    stripEl.innerHTML = items.map(it => `
+      <a class="stock-card" href="stock.html?code=${it.code}">
+        <div class="stock-card-name">${it.name}</div>
+        <div class="stock-card-code">${it.code} · ${it.market}</div>
+        <div class="stock-card-price">${fmt(it.close)}${it.price_unit ? ' ' + it.price_unit : ''}</div>
+        <div class="stock-card-meta">
+          <span>PER ${fmt(it.per)}</span>
+          ${it.fwd_per != null ? `<span class="fwd">Fwd ${fmt(it.fwd_per)}</span>` : ''}
+        </div>
+      </a>`).join('');
+  } catch (e) {
+    console.warn('[stocks-strip] 매니페스트 로드 실패:', e.message);
+    sectionEl.style.display = 'none';
+  }
+}
+
 async function load() {
   await Promise.all(KEYS.map(async (key) => {
     try {
@@ -42,6 +69,7 @@ async function load() {
 
   bindControls();
   render();
+  loadStocksStrip();
 }
 
 function bindControls() {

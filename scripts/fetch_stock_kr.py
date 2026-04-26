@@ -36,7 +36,8 @@ from pykrx import stock
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from naver_consensus import fetch_naver_data  # noqa: E402
 from incremental import (read_existing, get_incremental_start,  # noqa: E402
-                          merge_timeseries, diff_summary)
+                          merge_timeseries, diff_summary,
+                          regenerate_stocks_manifest)
 
 try:
     import FinanceDataReader as fdr
@@ -134,6 +135,9 @@ def main():
     s = diff_summary(existing, merged)
     print(f"  → {out.relative_to(_PROJECT_ROOT)} ({s['new_count']}건, "
           f"+{s['added']} added, last {s['new_last']}, {merged.get('name')})")
+
+    n = regenerate_stocks_manifest(DATA_DIR)
+    print(f"  → data/stocks/_index.json ({n}개 종목 매니페스트)")
 
 
 if __name__ == "__main__":

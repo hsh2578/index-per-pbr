@@ -10,6 +10,32 @@ const METRICS = [
 
 let dataset = null;
 
+async function loadOtherStocks() {
+  const stripEl = document.getElementById('stock-cards');
+  const sectionEl = document.getElementById('stock-strip');
+  if (!stripEl) return;
+  try {
+    const r = await fetch(`data/stocks/_index.json?t=${Date.now()}`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const items = (await r.json()).filter(it => it.code !== code);
+    if (!items.length) { sectionEl.style.display = 'none'; return; }
+    const fmt = (v) => v == null || !Number.isFinite(v) ? '—'
+      : (v >= 1000 ? v.toLocaleString('en', { maximumFractionDigits: 0 }) : v.toFixed(2));
+    stripEl.innerHTML = items.map(it => `
+      <a class="stock-card" href="stock.html?code=${it.code}">
+        <div class="stock-card-name">${it.name}</div>
+        <div class="stock-card-code">${it.code} · ${it.market}</div>
+        <div class="stock-card-price">${fmt(it.close)}${it.price_unit ? ' ' + it.price_unit : ''}</div>
+        <div class="stock-card-meta">
+          <span>PER ${fmt(it.per)}</span>
+          ${it.fwd_per != null ? `<span class="fwd">Fwd ${fmt(it.fwd_per)}</span>` : ''}
+        </div>
+      </a>`).join('');
+  } catch (e) {
+    sectionEl.style.display = 'none';
+  }
+}
+
 async function load() {
   try {
     const r = await fetch(`data/stocks/${code}.json?t=${Date.now()}`);
@@ -28,6 +54,7 @@ async function load() {
   if (dataset.note) document.getElementById('note').textContent = dataset.note;
   bindControls();
   render();
+  loadOtherStocks();
 }
 
 function bindControls() {
