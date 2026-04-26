@@ -1,0 +1,200 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+               "Malgun Gothic", "맑은 고딕", sans-serif;
+  color: #1c1f24;
+  background: #f6f7f9;
+  min-height: 100vh;
+}
+
+header {
+  padding: 20px 28px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+header .updated { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 28px 0;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  max-width: 1600px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+.tab {
+  background: transparent;
+  border: none;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.tab:hover { color: #1c1f24; }
+.tab.is-active {
+  color: #1c1f24;
+  border-bottom-color: #1c1f24;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.sidebar {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  height: fit-content;
+  border: 1px solid #e5e7eb;
+  position: sticky;
+  top: 20px;
+}
+.sidebar h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.sidebar h2:first-child { margin-top: 0; }
+
+.sidebar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  cursor: pointer;
+  font-size: 13px;
+  user-select: none;
+}
+.sidebar input[type=checkbox] { accent-color: #2563eb; cursor: pointer; }
+.sidebar select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.note {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 14px;
+  line-height: 1.5;
+}
+
+#summary { display: grid; gap: 0; font-size: 12px; }
+#summary .row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #e5e7eb;
+  align-items: center;
+}
+#summary .row:last-child { border-bottom: none; }
+#summary .name { color: #4b5563; font-weight: 500; }
+#summary .val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+  font-size: 12px;
+}
+#summary .sub { font-size: 11px; font-weight: 500; }
+#summary .z-pos { color: #b91c1c; }
+#summary .z-neg { color: #1d4ed8; }
+
+.stat-block {
+  padding: 10px 0;
+  border-bottom: 1px dashed #e5e7eb;
+}
+.stat-block:last-child { border-bottom: none; }
+.stat-label {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+.stat-val {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #1c1f24;
+  margin-bottom: 6px;
+}
+.stat-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  font-size: 11px;
+  color: #6b7280;
+}
+.stat-grid > span:nth-child(2n) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #374151;
+  font-weight: 500;
+}
+.stat-grid .z-pos { color: #b91c1c !important; }
+.stat-grid .z-neg { color: #1d4ed8 !important; }
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.charts.charts-single {
+  grid-template-columns: 1fr;
+}
+.charts.charts-single .chart-card > div:last-child {
+  height: 480px;
+}
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 16px 16px 12px;
+}
+.chart-card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #374151;
+  letter-spacing: -0.01em;
+}
+.chart-card > div:last-child {
+  width: 100%;
+  height: 320px;
+}
+
+@media (max-width: 1100px) {
+  main { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .charts { grid-template-columns: 1fr; }
+}
