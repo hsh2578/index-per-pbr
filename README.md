@@ -1,5 +1,7 @@
 # 지수 PER · PBR 대시보드
 
+### ▶ **[바로 보기 — hsh2578.github.io/index-per-pbr](https://hsh2578.github.io/index-per-pbr/)**
+
 KOSPI / KOSDAQ / S&P 500 / NASDAQ 100 의 PER · PBR · 배당수익률 · 지수 종가를 10년 시계열로 보여주는 정적 대시보드.
 
 ## 설치
