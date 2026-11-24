@@ -2,7 +2,7 @@
 
 ### ▶ **[바로 보기 — hsh2578.github.io/index-per-pbr](https://hsh2578.github.io/index-per-pbr/)**
 
-KOSPI / KOSDAQ / S&P 500 / NASDAQ 100 의 PER · PBR · 배당수익률 · 지수 종가를 10년 시계열로 보여주는 정적 대시보드.
+KOSPI / KOSDAQ / S&P 500 / NASDAQ 종합 의 PER · PBR · 배당수익률 · 지수 종가를 10년 시계열로 보여주는 정적 대시보드.
 
 ## 설치
 
@@ -28,7 +28,7 @@ pykrx 1.2.x 부터 KRX 정보데이터시스템 인증이 필요합니다.
 python scripts/update_all.py
 ```
 
-`data/kospi.json`, `data/kosdaq.json`, `data/sp500.json`, `data/nasdaq100.json` 4개 파일이 생성/갱신됩니다. 첫 실행 시 KRX 호출 때문에 1~3분 정도 소요될 수 있습니다.
+`data/kospi.json`, `data/kosdaq.json`, `data/sp500.json`, `data/nasdaq.json` 4개 파일이 생성/갱신됩니다. 첫 실행 시 KRX 호출 때문에 1~3분 정도 소요될 수 있습니다.
 
 ### 2) 로컬 미리보기
 
@@ -53,9 +53,9 @@ python -m http.server 8000
 | KOSPI | pykrx (KRX 공식) | pykrx | 일별 |
 | KOSDAQ | pykrx (KRX 공식) | pykrx | 일별 |
 | S&P 500 | multpl.com | yfinance | 월별 |
-| NASDAQ 100 | yfinance 현재값만 | yfinance | 월별 |
+| NASDAQ 종합 (^IXIC) | 없음 (가격만) | yfinance | 월별 |
 
-NASDAQ 100 의 historical PER/PBR 시계열은 무료 출처에 안정적으로 존재하지 않아 현재 시점 1개 값만 표시합니다. 향후 macrotrends 캡처 또는 100개 종목 합성 계산으로 추가 가능.
+NASDAQ 의 historical PER/PBR 시계열은 무료 출처에 안정적으로 존재하지 않아 지수 가격만 표시합니다.
 
 ## GitHub Pages 배포
 
@@ -65,4 +65,15 @@ NASDAQ 100 의 historical PER/PBR 시계열은 무료 출처에 안정적으로 
 
 - 개별 종목 검색 (Claude Skill, on-demand 캡처)
 - 해외 개별 종목 (macrotrends + stockanalysis 캡처)
-- NASDAQ 100 PER 시계열 데이터 보강
+- NASDAQ PER 시계열 데이터 보강
+
+## 관련 저장소
+
+이 대시보드에서 이어진 작업입니다.
+
+- [dacon-skills-dashboard](https://github.com/hsh2578/dacon-skills-dashboard) — 종목 단위 PER·PBR 시계열과 4팩터 스크리너 (DACON 출품작)
+- [kr-value-lens](https://github.com/hsh2578/kr-value-lens) — 실투자용으로 다시 설계한 버전
+
+---
+
+<sub>개인 학습 목적의 화면이며 투자 권유가 아닙니다. 지표 데이터의 권리는 각 제공처에 있습니다.</sub>
